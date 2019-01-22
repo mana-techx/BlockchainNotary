@@ -87,7 +87,7 @@ class Blockchain {
         return new Promise(function (resolve, reject) {
             
             self.db.getLevelDBData(height)
-                .then(result => typeof result !== 'undefined' ? resolve(JSON.parse(result)) : reject(new Error(`no block for that height specified ${height} - %%possible first run with no blocks%%`)))
+                .then(result => typeof result !== 'undefined' ? resolve(JSON.parse(result)) : reject(new Error(`no block for that height specified ${height} `)))
                 .catch(
                     err => reject(err)
                 )
@@ -143,18 +143,6 @@ class Blockchain {
         //Iterate and check Block Hash and Previous Hashes match, if not add Errors
 
     }
-
-    // Utility Method to Tamper a Block for Test Validation
-    // This method is for testing purpose
-    _modifyBlock(height, block) {
-        let self = this;
-        return new Promise((resolve, reject) => {
-            self.db.addLevelDBData(height, JSON.stringify(block).toString()).then((blockModified) => {
-                resolve(blockModified);
-            }).catch((err) => { console.log(err); reject(err) });
-        });
-    }
-
 }
 
 module.exports.Blockchain = Blockchain;
