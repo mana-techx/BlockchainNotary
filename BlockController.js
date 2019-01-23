@@ -1,6 +1,8 @@
 const SHA256 = require('crypto-js/sha256');
 const BlockClass = require('./Block.js');
 const BlockChain = require('./BlockChain.js')
+const ro = require('./RequestObject.js')
+const svo = require('./SignatureValidationObject.js')
 const Joi = require('joi');
 
 /**
@@ -15,10 +17,58 @@ class BlockController {
     constructor(server) {
         this.server = server;
         this.blocks = new BlockChain.Blockchain();
-        //this.initializeMockData();
-        this.getBlockByIndex();
-        this.postNewBlock();
-        this.initializeMockData();
+        //this.getBlockByIndex();
+        //this.postNewBlock();
+        this.postRequestValidation();
+        this.postMessageSignatureValidate();
+    }
+
+
+    /**
+     * Implement a POST endpoint to validate request with JSON response
+     */
+    postRequestValidation() {
+        this.server.route({
+            method: 'POST',
+            path: '/requestValidation',
+            options: {
+                validate: {
+                    payload: {
+                        address: Joi.string().min(1).required() 
+                    }
+                }
+            },
+            handler: async (request, h) => {
+                let requestObject = new ro.RequestObject("asdfadsfasdfasdfasdf");
+                requestObject.walletAddress = request.payload.address;
+                requestObject.requestTimeStamp = "1123414";
+                requestObject.validationWindow = 300;
+                
+                return requestObject;
+            }
+        });
+    }
+
+    /**
+     * Implement a POST endpoint to validate message signature with JSON response
+     */
+    postMessageSignatureValidate() {
+        this.server.route({
+            method: 'POST',
+            path: '/message-signature/validate',
+            options: {
+                validate: {
+                    payload: {
+                        address: Joi.string().min(1).required(), 
+                        signature: Joi.string().min(1).required() 
+                    }
+                }
+            },
+            handler: async (request, h) => {
+                let signValidationObj = new svo.SignatureValidationObject(request.payload.address,request.payload.signature);
+                return signValidationObj;
+            }
+        });
     }
 
     /**
