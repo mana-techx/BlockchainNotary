@@ -3,11 +3,11 @@
 |  ===============================================*/
 
 class RequestObject {
-	constructor(message){
+	constructor(walletAddress){
 		// Add your Block properties
-		this.walletAddress = 0;
+		this.walletAddress = walletAddress;
 		this.requestTimeStamp = new Date().getTime().toString().slice(0,-3);
-		this.message = message;
+		this.message = this.walletAddress + ":" + this.requestTimeStamp + ":starRegistry" ;
 		this.validationWindow = 0;
 	}
 }

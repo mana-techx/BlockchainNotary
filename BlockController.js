@@ -1,8 +1,9 @@
 const SHA256 = require('crypto-js/sha256');
 const BlockClass = require('./Block.js');
-const BlockChain = require('./BlockChain.js')
-const ro = require('./RequestObject.js')
-const svo = require('./SignatureValidationObject.js')
+const BlockChain = require('./BlockChain.js');
+const mempool = require('./mempool.js');
+const ro = require('./RequestObject.js');
+const svo = require('./SignatureValidationObject.js');
 const Joi = require('joi');
 
 /**
@@ -21,6 +22,7 @@ class BlockController {
         //this.postNewBlock();
         this.postRequestValidation();
         this.postMessageSignatureValidate();
+        this.mempool = new mempool.Mempool();
     }
 
 
@@ -39,12 +41,8 @@ class BlockController {
                 }
             },
             handler: async (request, h) => {
-                let requestObject = new ro.RequestObject("asdfadsfasdfasdfasdf");
-                requestObject.walletAddress = request.payload.address;
-                requestObject.requestTimeStamp = "1123414";
-                requestObject.validationWindow = 300;
-                
-                return requestObject;
+                let requestObject = new ro.RequestObject(request.payload.address);
+                return this.mempool.addARequestValidation(requestObject);
             }
         });
     }
