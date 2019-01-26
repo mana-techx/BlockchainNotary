@@ -5,6 +5,8 @@ const mempool = require('./Mempool.js');
 const ro = require('./RequestObject.js');
 const svo = require('./SignatureValidationObject.js');
 const Joi = require('joi');
+const Boom = require('Boom');
+
 
 /**
  * Controller Definition to encapsulate routes to work with blocks
@@ -24,7 +26,9 @@ class BlockController {
         this.postMessageSignatureValidate();
         this.getStarsByAddress();
         this.getStarsByHash();
-        
+        this.test();
+        this.status();
+
         this.mempool = new mempool.Mempool();
     }
 
@@ -39,13 +43,19 @@ class BlockController {
             options: {
                 validate: {
                     payload: {
-                        address: Joi.string().min(1).required() 
+                        address: Joi.string().min(1).required()
                     }
                 }
             },
             handler: (request, h) => {
-                let requestObject = new ro.RequestObject(request.payload.address);
-                return this.mempool.addARequestValidation(requestObject);
+                //return h.response().code(200);
+                try {
+                    let requestObject = new ro.RequestObject(request.payload.address);
+                    return h.response(this.mempool.addARequestValidation(requestObject));
+                } catch (e) {
+                    throw Boom.badRequest(e, request.payload);
+                }
+
             }
         });
     }
@@ -60,14 +70,18 @@ class BlockController {
             options: {
                 validate: {
                     payload: {
-                        address: Joi.string().min(1).required(), 
-                        signature: Joi.string().min(1).required() 
+                        address: Joi.string().min(1).required(),
+                        signature: Joi.string().min(1).required()
                     }
                 }
             },
             handler: (request, h) => {
-                let signValidationObj = new svo.SignatureValidationObject(request.payload.address,request.payload.signature);
-                return this.mempool.validateRequestByWallet(signValidationObj);
+                try {
+                    let signValidationObj = new svo.SignatureValidationObject(request.payload.address, request.payload.signature);
+                    return this.mempool.validateRequestByWallet(signValidationObj);
+                } catch (e) {
+                    throw Boom.badRequest(e, request.payload);
+                }
             }
         });
     }
@@ -79,24 +93,22 @@ class BlockController {
         this.server.route({
             method: 'GET',
             path: '/block/{index}',
-            
+
             options: {
                 validate: {
-                        params: {
-                            index: Joi.number().integer().min(0).required()
+                    params: {
+                        index: Joi.number().integer().min(0).required()
                     }
                 }
             },
             handler: async (request, h) => {
-                let result = '';
                 try {
+                    let result = '';
                     result = await this.blocks.getBlock(request.params.index);
+                    return result;
+                } catch (e) {
+                    throw Boom.notFound(e);
                 }
-                catch (err)
-                {
-                    result =err.toString();
-                }
-                return result;
             }
         })
     }
@@ -104,85 +116,106 @@ class BlockController {
     //http://localhost:8000/stars/address:[ADDRESS]
     getStarsByAddress() {
         this.server.route({
-            method: 'GET',
-            path: '/stars/address:{ADDRESS}',
-            options: {
-                validate: {
+                method: 'GET',
+                path: '/stars/address:{ADDRESS}',
+                options: {
+                    validate: {
                         params: {
                             ADDRESS: Joi.string().min(1).required()
+                        }
                     }
+                },
+                handler: async (request, h) => {
+
+                    let result = '';
+                    try {
+                        result = await this.blocks.getBlockByWallet(request.params.ADDRESS);
+                        return result;
+                    } catch (err) {
+                        throw Boom.notFound(err);
+                    }
+
                 }
-            },
-            handler: async (request, h) => {
-                let result = '';
-                try {
-                    result = await this.blocks.getBlockByWallet(request.params.ADDRESS);
-                }
-                catch (err)
-                {
-                    result =err.toString();
-                }
-                return result;                
-            }
 
         });
-    }
+}
 
-    //http://localhost:8000/stars/address:[HASH]
-    getStarsByHash() {
-        this.server.route({
-            method: 'GET',
-            path: '/stars/hash:{HASH}',
-            options: {
-                validate: {
-                        params: {
-                            HASH: Joi.string().min(1).required()
-                    }
+//http://localhost:8000/stars/address:[HASH]
+getStarsByHash() {
+    this.server.route({
+        method: 'GET',
+        path: '/stars/hash:{HASH}',
+        options: {
+            validate: {
+                params: {
+                    HASH: Joi.string().min(1).required()
                 }
-            },
-            handler: async (request, h) => {
-                let result = '';
-                try {
-                    result = await this.blocks.getBlockByHash(request.params.HASH);
-                }
-                catch (err)
-                {
-                    result =err.toString();
-                }
-                return result;                
             }
+        },
+        handler: async (request, h) => {
+            try {
+                let result = await this.blocks.getBlockByHash(request.params.HASH);
+                return result;
+            } catch (e) {
+                throw Boom.badRequest(e);
+            }
+        }
 
-        });
-    }
+    });
+}
 
+test() {
+    this.server.route({
+        path: '/test',
+        method: 'GET',
+        handler: (request, h) => {
+            //return h.response().code(200);
+            throw Boom.notFound('Cannot find the requested page')
+        }
+    });
+}
 
-    /**
-     * Implement a POST Endpoint to add a new Block, url: "/api/block"
-     */
-    postNewBlock() {
-        this.server.route({
-            method: 'POST',
-            path: '/block',
-              /*options: {
-                validate: {
-                    payload: {
-                        data: Joi.string().min(1).required() 
-                    }
+status() {
+    this.server.route({
+        path: '/status',
+        method: 'GET',
+        handler: (request, h) => {
+            return h.response(this.mempool.status());
+        }
+    });
+}
+/**
+ * Implement a POST Endpoint to add a new Block, url: "/api/block"
+ */
+postNewBlock() {
+    this.server.route({
+        method: 'POST',
+        path: '/block',
+        /*options: {
+            validate: {
+                payload: {
+                    data: Joi.string().min(1).required() 
                 }
-            },*/
-            handler: async (request, h) => {
+            }
+        },*/
+        handler: async (request, h) => {
+            try {
                 let starInformation = JSON.parse(request.payload);
                 if (this.mempool.verifyAddressRequest(starInformation)) {
-                    let a = 1;//FIXME
+                    let blockAux = new BlockClass.Block(starInformation);
+                    blockAux.hash = SHA256(JSON.stringify(blockAux)).toString();
+                    let x = await this.blocks.addBlock(blockAux);
+                    this.mempool.removeCheckedStatus(starInformation); //Remove after successful addition
+                    return JSON.parse(x);
+                } else {
+                    throw Boom.badRequest("Validate your signed message first", request.payload);
                 }
-                let blockAux = new BlockClass.Block(starInformation);
-                
-                blockAux.hash = SHA256(JSON.stringify(blockAux)).toString();
-                let x = await this.blocks.addBlock(blockAux); 
-                return JSON.parse(x);
+            } catch (e) {
+                throw Boom.badRequest(e, request.payload);
             }
-        });
-    }
+        }
+    });
+}
 
 }
 
@@ -190,4 +223,6 @@ class BlockController {
  * Exporting the BlockController class
  * @param {*} server 
  */
-module.exports = (server) => { return new BlockController(server);}
+module.exports = (server) => {
+    return new BlockController(server);
+}

@@ -5,7 +5,13 @@ class Mempool {
     constructor() {
         this.mempool = [];
         this.timeoutRequests = [];
-        this.mempoolValid = [];
+        this.mempoolValid = new Map();
+    }
+
+    status() {
+        let resp = { _mempool: this.mempool, _timeoutRequests : this.timeoutRequests, _mempoolValid : JSON.stringify(this.mempoolValid)};
+
+        return resp;
     }
 
     setTimeOut(request) {
@@ -62,7 +68,7 @@ class Mempool {
                 
                 //If you have implemented a timeoutArray, make sure you clean it up before returning the object.
                 //Save the object into the mempoolValid array
-                this.mempoolValid[resp.status.address] = resp;
+                this.mempoolValid.set(resp.status.address, resp);
                 this.removeValidationRequest(reqObject);
             }
         }
@@ -71,7 +77,11 @@ class Mempool {
 
 
     verifyAddressRequest(starInformation) {
-        return typeof this.mempoolValid[starInformation.address] === 'undefined' ? false : true;
+        return typeof this.mempoolValid.get(starInformation.address) === 'undefined' ? false : true;
+    }
+
+    removeCheckedStatus(starInformation) {
+        return typeof this.mempoolValid.delete(starInformation.address);
     }
 
 

@@ -70,18 +70,19 @@ class LevelSandbox {
     // Method that return the height
     getLevelDbByHash(hash) {
         let self = this;
+        let found = false;
         return new Promise(function (resolve, reject) {
             // Add your code here, remember un Promises you need to resolve() or reject()
             self.db.createReadStream()
                 .on('data', function (data) {
                     let block = JSON.parse(data.value);
-                    if (block.hash === hash) resolve( block );
+                    if (block.hash === hash) { found = true; resolve( block )};
                 })
                 .on('error', function (err) {
                     reject(err);
                 })
                 .on('close', function () {
-                    reject(new Error("hash not found!"))
+                    if (!found) reject(new Error("hash not found!"));
                 });
         });
     }

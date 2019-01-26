@@ -12,6 +12,7 @@
     "bitcoinjs-lib": "^4.0.2",
     "bitcoinjs-message": "^2.0.0",
     "body-parser": "^1.18.3",
+    "boom": "^7.3.0",
     "crypto-js": "^3.1.9-1",
     "hapi": "^18.0.0",
     "hex2ascii": "0.0.3",

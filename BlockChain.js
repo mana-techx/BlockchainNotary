@@ -20,8 +20,8 @@ class Blockchain {
     // will not create the genesis block
     generateGenesisBlock() {
         // Add your code here
-
-        let gb = new Block.Block("First block in the chain - Genesis block");
+        let data  = { address : "0x", star : "" };
+        let gb = new Block.Block(data);
 
         this.db.getBlocksCount()
             .then(result => {
