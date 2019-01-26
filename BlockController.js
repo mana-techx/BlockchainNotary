@@ -22,6 +22,8 @@ class BlockController {
         this.postNewBlock();
         this.postRequestValidation();
         this.postMessageSignatureValidate();
+        this.getStarsByAddress();
+        this.getStarsByHash();
         
         this.mempool = new mempool.Mempool();
     }
@@ -98,7 +100,61 @@ class BlockController {
             }
         })
     }
-    
+
+    //http://localhost:8000/stars/address:[ADDRESS]
+    getStarsByAddress() {
+        this.server.route({
+            method: 'GET',
+            path: '/stars/address:{ADDRESS}',
+            options: {
+                validate: {
+                        params: {
+                            ADDRESS: Joi.string().min(1).required()
+                    }
+                }
+            },
+            handler: async (request, h) => {
+                let result = '';
+                try {
+                    result = await this.blocks.getBlockByWallet(request.params.ADDRESS);
+                }
+                catch (err)
+                {
+                    result =err.toString();
+                }
+                return result;                
+            }
+
+        });
+    }
+
+    //http://localhost:8000/stars/address:[HASH]
+    getStarsByHash() {
+        this.server.route({
+            method: 'GET',
+            path: '/stars/hash:{HASH}',
+            options: {
+                validate: {
+                        params: {
+                            HASH: Joi.string().min(1).required()
+                    }
+                }
+            },
+            handler: async (request, h) => {
+                let result = '';
+                try {
+                    result = await this.blocks.getBlockByHash(request.params.HASH);
+                }
+                catch (err)
+                {
+                    result =err.toString();
+                }
+                return result;                
+            }
+
+        });
+    }
+
 
     /**
      * Implement a POST Endpoint to add a new Block, url: "/api/block"
@@ -107,7 +163,7 @@ class BlockController {
         this.server.route({
             method: 'POST',
             path: '/block',
-  /*          options: {
+              /*options: {
                 validate: {
                     payload: {
                         data: Joi.string().min(1).required() 
@@ -128,23 +184,6 @@ class BlockController {
         });
     }
 
-    /**
-     * Help method to inizialized Mock dataset, adds 10 test blocks to the blocks array
-     */
-
-     /**
-     * Implement a GET Endpoint to retrieve a block by index, url: "/api/block/:index"
-     */
-    initializeMockData() {
-        this.server.route({
-            method: 'POST',
-            path: '/blockchain/init',
-    
-            handler: (request, h) => {
-                //initializeMockData();
-            }
-        })
-    }
 }
 
 /**

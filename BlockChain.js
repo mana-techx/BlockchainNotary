@@ -30,8 +30,7 @@ class Blockchain {
                 } else {
                     this.addBlock(gb);
                 }
-            }
-            )
+            })
 
     }
 
@@ -61,19 +60,17 @@ class Blockchain {
                     else {
                         return new Promise(function (resolve) {
                             resolve(block);
-                        }
-                        )
+                        })
                     }
                 })
                 //Get previous block's hash and set it up for this block's prevhash
                 .then(async result => {
-                    block.previousBlockHash = block === result ? '0x' : result.hash;  // 0x for genesis block or prev hash
+                    block.previousBlockHash = block === result ? '0x' : result.hash; // 0x for genesis block or prev hash
                     block.hash = SHA256(JSON.stringify(block)).toString();
                     try {
                         const x = await self.db.addLevelDBData(block.height, JSON.stringify(block).toString());
                         return resolve(x);
-                    }
-                    catch (err) {
+                    } catch (err) {
                         return reject(err);
                     }
                 })
@@ -85,7 +82,7 @@ class Blockchain {
         // Add your code here
         let self = this;
         return new Promise(function (resolve, reject) {
-            
+
             self.db.getLevelDBData(height)
                 .then(result => typeof result !== 'undefined' ? resolve(JSON.parse(result)) : reject(new Error(`no block for that height specified ${height} `)))
                 .catch(
@@ -93,6 +90,42 @@ class Blockchain {
                 )
         })
     }
+
+    // Get Block By Height
+    getBlockByHash(hash) {
+        // Add your code here
+        let self = this;
+        return new Promise(function (resolve, reject) {
+
+            self.db.getLevelDbByHash(hash)
+                .then(result => {
+                    if (typeof result === 'undefined') {
+                        reject(new Error(`no block for that hash specified ${hash}`));
+                    }  else  {
+                        resolve(result)  ;
+                    }
+                })
+                .catch(
+                    err => reject(err)
+                )
+        })
+    }
+
+    // Get Block By Height
+    getBlockByWallet(wallet) {
+        // Add your code here
+        let self = this;
+        return new Promise(function (resolve, reject) {
+
+            self.db.getLevelDbByWallet(wallet)
+                .then(result => typeof result !== 'undefined' ? resolve(result) : reject(new Error(`no blocka for that wallet specified ${wallet} `)))
+                .catch(
+                    err => reject(err)
+                )
+        })
+    }
+
+
 
     // Validate if Block is being tampered by Block Height
     validateBlock(height) {
@@ -106,7 +139,7 @@ class Blockchain {
                     thisBlock.hash = '';
                     resolve(hash === SHA256(JSON.stringify(thisBlock)).toString() ? true : false);
                 })
-            .catch(err => console.log( `Error validating block ${err}`));
+                .catch(err => console.log(`Error validating block ${err}`));
         })
     }
 
@@ -118,8 +151,7 @@ class Blockchain {
         //Get Chain Height
         try {
             var bestHeight = await self.getBlockHeight();
-        }
-        catch (err) {
+        } catch (err) {
             validationNotes.push(`Unsuccessful getting Best Block height ${err}`);
             Promise.reject(validationNotes);
         }
@@ -129,7 +161,7 @@ class Blockchain {
             let currBlkObj = await self.getBlock(i);
             //console.log(`validating Block #${JSON.stringify(currBlkObj).toString()}`);
             let valid = await self.validateBlock(currBlkObj.height);
-            if (!valid ) {
+            if (!valid) {
                 validationNotes.push(`Bad Block: Hash won't match in Block#${i} - hash is broken - ${JSON.stringify(currBlkObj).toString()}`);
             } else {
                 if (currBlkObj.previousBlockHash != prevhash) {
