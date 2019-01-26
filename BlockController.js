@@ -113,7 +113,7 @@ class BlockController {
         })
     }
 
-    //http://localhost:8000/stars/address:[ADDRESS]
+    //Get star by given wallet address http://localhost:8000/stars/address:[ADDRESS]
     getStarsByAddress() {
         this.server.route({
                 method: 'GET',
@@ -140,7 +140,7 @@ class BlockController {
         });
 }
 
-//http://localhost:8000/stars/address:[HASH]
+//get star for the given hash http://localhost:8000/stars/address:[HASH]
 getStarsByHash() {
     this.server.route({
         method: 'GET',

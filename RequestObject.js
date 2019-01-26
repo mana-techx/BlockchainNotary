@@ -4,10 +4,9 @@
 
 class RequestObject {
 	constructor(walletAddress){
-		// Add your Block properties
 		this.walletAddress = walletAddress;
 		this.requestTimeStamp = new Date().getTime().toString().slice(0,-3);
-		//TODO  - uncomment this for the final release
+		
 		this.message = this.walletAddress + ":" + this.requestTimeStamp + ":starRegistry" ;
 		//this.message = this.walletAddress + ":starRegistry" ;
 		this.validationWindow = 0;
