@@ -50,7 +50,7 @@ class Blockchain {
     addBlock(block) {
         // Add your code here
         let self = this;
-        block.timeStamp = new Date().getTime().toString().slice(0, -3);
+        block.time = new Date().getTime().toString().slice(0, -3);
         return new Promise(function (resolve, reject) {
             //First Setup block height 
             self.getBlockHeight()
@@ -67,7 +67,7 @@ class Blockchain {
                 })
                 //Get previous block's hash and set it up for this block's prevhash
                 .then(async result => {
-                    block.previousHash = block === result ? '0x' : result.hash;  // 0x for genesis block or prev hash
+                    block.previousBlockHash = block === result ? '0x' : result.hash;  // 0x for genesis block or prev hash
                     block.hash = SHA256(JSON.stringify(block)).toString();
                     try {
                         const x = await self.db.addLevelDBData(block.height, JSON.stringify(block).toString());
@@ -132,8 +132,8 @@ class Blockchain {
             if (!valid ) {
                 validationNotes.push(`Bad Block: Hash won't match in Block#${i} - hash is broken - ${JSON.stringify(currBlkObj).toString()}`);
             } else {
-                if (currBlkObj.previousHash != prevhash) {
-                    validationNotes.push(`Bad Block: Previous Hash Mismatch in Block#${i} ${currBlkObj.previousHash} <> ${prevhash}`);
+                if (currBlkObj.previousBlockHash != prevhash) {
+                    validationNotes.push(`Bad Block: Previous Hash Mismatch in Block#${i} ${currBlkObj.previousBlockHash} <> ${prevhash}`);
                 }
                 prevhash = currBlkObj.hash;
             }

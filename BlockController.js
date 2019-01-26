@@ -18,10 +18,11 @@ class BlockController {
     constructor(server) {
         this.server = server;
         this.blocks = new BlockChain.Blockchain();
-        //this.getBlockByIndex();
-        //this.postNewBlock();
+        this.getBlockByIndex();
+        this.postNewBlock();
         this.postRequestValidation();
         this.postMessageSignatureValidate();
+        
         this.mempool = new mempool.Mempool();
     }
 
@@ -106,15 +107,19 @@ class BlockController {
         this.server.route({
             method: 'POST',
             path: '/block',
-            options: {
+  /*          options: {
                 validate: {
                     payload: {
                         data: Joi.string().min(1).required() 
                     }
                 }
-            },
+            },*/
             handler: async (request, h) => {
-                let blockAux = new BlockClass.Block(request.payload.data);
+                let starInformation = JSON.parse(request.payload);
+                if (this.mempool.verifyAddressRequest(starInformation)) {
+                    let a = 1;//FIXME
+                }
+                let blockAux = new BlockClass.Block(starInformation);
                 
                 blockAux.hash = SHA256(JSON.stringify(blockAux)).toString();
                 let x = await this.blocks.addBlock(blockAux); 

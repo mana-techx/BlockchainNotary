@@ -50,19 +50,18 @@ class Mempool {
 
         let reqObject = this.mempool.find(element => element.walletAddress === resp.status.address);
         resp.registerStar = false;
-        if (typeof reqObject === 'undefined') {
-            return resp;
-         } else {
+        if ( !(typeof reqObject === 'undefined')) {
             var timeleft = this.getTimeLeft(reqObject.requestTimeStamp);
             resp.status.message = reqObject.message;
             resp.status.validationWindow = timeleft;
             let isValid = bitcoinMessage.verify(reqObject.message, resp.status.address, resp.status.messageSignature);
             if (isValid) {
-                //Create the new object and save it into the mempoolValid array
+               
                 resp.registerStar = true;
                 resp.status.requestTimeStamp = reqObject.requestTimeStamp;
                 
                 //If you have implemented a timeoutArray, make sure you clean it up before returning the object.
+                //Save the object into the mempoolValid array
                 this.mempoolValid[resp.status.address] = resp;
                 this.removeValidationRequest(reqObject);
             }
@@ -71,8 +70,8 @@ class Mempool {
     }
 
 
-    verifyAddressRequest(request) {
-
+    verifyAddressRequest(starInformation) {
+        return typeof this.mempoolValid[starInformation.address] === 'undefined' ? false : true;
     }
 
 
