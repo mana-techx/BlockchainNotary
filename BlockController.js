@@ -200,7 +200,7 @@ postNewBlock() {
         },*/
         handler: async (request, h) => {
             try {
-                let starInformation = JSON.parse(request.payload);
+                let starInformation = request.payload;
                 if (this.mempool.verifyAddressRequest(starInformation)) {
                     let blockAux = new BlockClass.Block(starInformation);
                     blockAux.hash = SHA256(JSON.stringify(blockAux)).toString();

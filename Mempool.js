@@ -9,7 +9,7 @@ class Mempool {
     }
 
     status() {
-        let resp = { _mempool: this.mempool, _timeoutRequests : this.timeoutRequests, _mempoolValid : JSON.stringify(this.mempoolValid)};
+        let resp = { _mempool: this.mempool, _timeoutRequests : JSON.stringify(...this.timeoutRequests), _mempoolValid : JSON.stringify(...this.mempoolValid)};
 
         return resp;
     }
@@ -43,8 +43,10 @@ class Mempool {
     }
 
     removeValidationRequest(requestObject) {
+        console.log("Timeout called - " + JSON.stringify(requestObject));
         this.mempool = this.mempool.filter(el => el.walletAddress != requestObject.walletAddress);
         this.timeoutRequests = this.timeoutRequests.filter(el => el.walletAddress != requestObject.walletAddress);
+
     }
 
 
