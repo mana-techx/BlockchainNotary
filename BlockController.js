@@ -6,6 +6,7 @@ const ro = require('./RequestObject.js');
 const svo = require('./SignatureValidationObject.js');
 const Joi = require('joi');
 const Boom = require('Boom');
+const hex2ascii = require('hex2ascii');
 
 
 /**
@@ -105,6 +106,8 @@ class BlockController {
                 try {
                     let result = '';
                     result = await this.blocks.getBlock(request.params.index);
+                    result.body.star.storyDecoded = hex2ascii(result.body.star.story);
+
                     return result;
                 } catch (e) {
                     throw Boom.notFound(e);
@@ -130,6 +133,8 @@ class BlockController {
                     let result = '';
                     try {
                         result = await this.blocks.getBlockByWallet(request.params.ADDRESS);
+
+
                         return result;
                     } catch (err) {
                         throw Boom.notFound(err);
@@ -155,6 +160,7 @@ getStarsByHash() {
         handler: async (request, h) => {
             try {
                 let result = await this.blocks.getBlockByHash(request.params.HASH);
+                result.body.star.storyDecoded = hex2ascii(result.body.star.story);
                 return result;
             } catch (e) {
                 throw Boom.badRequest(e);
@@ -201,12 +207,17 @@ postNewBlock() {
         handler: async (request, h) => {
             try {
                 let starInformation = request.payload;
+                starInformation.star.story = Buffer(starInformation.star.story).toString('hex');
                 if (this.mempool.verifyAddressRequest(starInformation)) {
                     let blockAux = new BlockClass.Block(starInformation);
                     blockAux.hash = SHA256(JSON.stringify(blockAux)).toString();
                     let x = await this.blocks.addBlock(blockAux);
                     this.mempool.removeCheckedStatus(starInformation); //Remove after successful addition
-                    return JSON.parse(x);
+                    let ret = JSON.parse(x);
+                    delete ret.body.star.storyDecoded;
+                    //ret.body.star.storyDecoded = hex2ascii(ret.body.star.story);
+                    return ret;
+
                 } else {
                     throw Boom.badRequest("Validate your signed message first", request.payload);
                 }

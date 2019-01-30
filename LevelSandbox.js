@@ -4,7 +4,7 @@
 
 const level = require('level');
 const chainDB = './chaindata';
-
+const hex2ascii = require('hex2ascii');
 
 class LevelSandbox {
 
@@ -98,7 +98,10 @@ class LevelSandbox {
             self.db.createReadStream()
                 .on('data', function (data) {
                     let block = JSON.parse(data.value);
-                    if (typeof block.body !== "undefined" && block.body.address === wallet) matchingBlocks.push(block);
+                    if (typeof block.body !== "undefined" && block.body.address === wallet) {
+                        block.body.star.storyDecoded = hex2ascii(block.body.star.story);
+                        matchingBlocks.push(block);
+                    } 
                 })
                 .on('error', function (err) {
                     reject(err);

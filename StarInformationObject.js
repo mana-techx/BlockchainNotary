@@ -15,7 +15,8 @@ class Star {
 	constructor(dec = "default", ra= "default", story= "default") {
 		this.dec = dec,
 			this.ra = ra,
-			this.story = story
+			this.story = story,
+			this.storyDecoded
 	}
 }
 
